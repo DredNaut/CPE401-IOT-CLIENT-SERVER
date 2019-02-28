@@ -1,0 +1,78 @@
+2019-02-27 18:20:52,245 INFO     Register Packet Received
+2019-02-27 18:20:52,246 INFO     Register Found Exact
+2019-02-27 18:20:52,246 DEBUG    Data: REGISTER	asmith	password	aa:aa:aa:aa	127.0.0.1	1994
+2019-02-27 18:20:52,246 INFO     Register Packet Received
+2019-02-27 18:20:52,247 INFO     Register Found Exact
+2019-02-27 18:20:52,247 DEBUG    Data: REGISTER	bsmith	password	bb:bb:bb:bb	127.0.0.2	1995
+2019-02-27 18:20:52,247 INFO     Register Packet Received
+2019-02-27 18:20:52,248 INFO     Register Found Exact
+2019-02-27 18:20:52,248 DEBUG    Data: REGISTER	csmith	password	cc:cc:cc:cc	127.0.0.3	1996
+2019-02-27 18:20:52,248 INFO     Register Packet Received
+2019-02-27 18:20:52,249 INFO     Register Found Exact
+2019-02-27 18:20:52,249 DEBUG    Data: REGISTER	dsmith	password	dd:dd:dd:dd	127.0.0.4	1997
+2019-02-27 18:20:52,250 INFO     Register Packet Received
+2019-02-27 18:20:52,251 INFO     IP reused
+2019-02-27 18:20:52,251 DEBUG    Data: REGISTER	esmith	password	ee:ee:ee:ee	127.0.0.3	1998
+2019-02-27 18:20:52,251 INFO     Register Packet Received
+2019-02-27 18:20:52,252 INFO     MAC reused
+2019-02-27 18:20:52,252 DEBUG    Data: REGISTER	gsmith	password	aa:aa:aa:aa	127.0.0.7	2000
+2019-02-27 18:20:52,253 INFO     Register Packet Received
+2019-02-27 18:20:52,254 INFO     No match, user not registered
+2019-02-27 18:20:52,254 INFO     Adding the user to the db
+2019-02-27 18:20:52,257 DEBUG    Data: REGISTER	fsmith	password	ff:ff:ff:ff	127.0.0.6	1999
+2019-02-27 18:20:52,258 INFO     De-Register Packet Received
+2019-02-27 18:20:52,258 INFO     Entry Found, Removing
+2019-02-27 18:20:52,258 INFO     User is in the register, removing the user
+2019-02-27 18:20:52,260 DEBUG    Data: DEREGISTER	fsmith	password	ff:ff:ff:ff	127.0.0.6	1999
+2019-02-27 18:20:52,260 INFO     De-Register Packet Received
+2019-02-27 18:20:52,260 INFO     User registered to another ip or mac cannot remove
+2019-02-27 18:20:52,260 INFO     Deregistration failed: 30
+2019-02-27 18:20:52,261 DEBUG    Data: DEREGISTER	dsmith	password	dd:dd:dd:dd	127.0.0.3	1997
+2019-02-27 18:20:52,261 INFO     De-Register Packet Received
+2019-02-27 18:20:52,261 INFO     Mac or User not registered
+2019-02-27 18:20:52,261 INFO     Deregistration failed: 21
+2019-02-27 18:20:52,262 DEBUG    Data: DEREGISTER	tsmith	password	vv:vv:vv:vv	127.0.1.4	1993
+2019-02-27 18:22:09,512 INFO     Register Packet Received
+2019-02-27 18:22:09,512 INFO     Register Found Exact
+2019-02-27 18:22:09,513 DEBUG    RECV: REGISTER	asmith	password	aa:aa:aa:aa	127.0.0.1	1994
+2019-02-27 18:22:09,513 DEBUG    SEND: ACK	01	asmith	2019-02-27:18:22:09	0f47fd880b33b346e4e441cfc2eb8111a87da9b753d85e9e164e2bf6d4c20686
+2019-02-27 18:22:09,513 INFO     Register Packet Received
+2019-02-27 18:22:09,514 INFO     Register Found Exact
+2019-02-27 18:22:09,514 DEBUG    RECV: REGISTER	bsmith	password	bb:bb:bb:bb	127.0.0.2	1995
+2019-02-27 18:22:09,514 DEBUG    SEND: ACK	01	bsmith	2019-02-27:18:22:09	8b758c89b7aebd01ce1de4eededd2d98f6b965f948db8a0a0e51f1219d9e48ec
+2019-02-27 18:22:09,515 INFO     Register Packet Received
+2019-02-27 18:22:09,516 INFO     Register Found Exact
+2019-02-27 18:22:09,516 DEBUG    RECV: REGISTER	csmith	password	cc:cc:cc:cc	127.0.0.3	1996
+2019-02-27 18:22:09,516 DEBUG    SEND: ACK	01	csmith	2019-02-27:18:22:09	eb6df0b685ab0df21923fa718deb779075f3b228d5f69422cfe67d7e8a03a1a2
+2019-02-27 18:22:09,516 INFO     Register Packet Received
+2019-02-27 18:22:09,516 INFO     Register Found Exact
+2019-02-27 18:22:09,517 DEBUG    RECV: REGISTER	dsmith	password	dd:dd:dd:dd	127.0.0.4	1997
+2019-02-27 18:22:09,517 DEBUG    SEND: ACK	01	dsmith	2019-02-27:18:22:09	b9c2bfd56d758adfbd04a49d0a9b5df67f46b870324ce3fabc2d893a0ad78726
+2019-02-27 18:22:09,517 INFO     Register Packet Received
+2019-02-27 18:22:09,517 INFO     IP reused
+2019-02-27 18:22:09,518 DEBUG    RECV: REGISTER	esmith	password	ee:ee:ee:ee	127.0.0.3	1998
+2019-02-27 18:22:09,518 DEBUG    SEND: ACK	12	esmith	2019-02-27:18:22:09	d80dd3e0ed43359a67172e08ccb224b2e2c16f680b8a06bfd7be0104239e24d3
+2019-02-27 18:22:09,518 INFO     Register Packet Received
+2019-02-27 18:22:09,519 INFO     MAC reused
+2019-02-27 18:22:09,519 DEBUG    RECV: REGISTER	gsmith	password	aa:aa:aa:aa	127.0.0.7	2000
+2019-02-27 18:22:09,519 DEBUG    SEND: ACK	13	gsmith	2019-02-27:18:22:09	38a938e8ba74e7f0e4aeed5d45a9ce07e710a6fce91a21ac9221ae8d26563d86
+2019-02-27 18:22:09,519 INFO     Register Packet Received
+2019-02-27 18:22:09,520 INFO     No match, user not registered
+2019-02-27 18:22:09,520 INFO     Adding the user to the db
+2019-02-27 18:22:09,523 DEBUG    RECV: REGISTER	fsmith	password	ff:ff:ff:ff	127.0.0.6	1999
+2019-02-27 18:22:09,523 DEBUG    SEND: ACK	00	fsmith	2019-02-27:18:22:09	a0c5946b556d8581a183ea6ae1850f8603fe57ff38c41ab1f734f8b67636fc74
+2019-02-27 18:22:09,523 INFO     De-Register Packet Received
+2019-02-27 18:22:09,524 INFO     Entry Found, Removing
+2019-02-27 18:22:09,524 INFO     User is in the register, removing the user
+2019-02-27 18:22:09,525 DEBUG    RECV: DEREGISTER	fsmith	password	ff:ff:ff:ff	127.0.0.6	1999
+2019-02-27 18:22:09,525 DEBUG    SEND: ACK	20	fsmith	2019-02-27:18:22:09	32175ad2d449fd995515b192f8b468ac5069e47a059b63210494fa7deb7fa765
+2019-02-27 18:22:09,526 INFO     De-Register Packet Received
+2019-02-27 18:22:09,526 INFO     User registered to another ip or mac cannot remove
+2019-02-27 18:22:09,526 INFO     Deregistration failed: 30
+2019-02-27 18:22:09,526 DEBUG    RECV: DEREGISTER	dsmith	password	dd:dd:dd:dd	127.0.0.3	1997
+2019-02-27 18:22:09,526 DEBUG    SEND: ACK	30	dsmith	2019-02-27:18:22:09	682f753c8e44edd2e0bfd38de87258aa6bd240a09edb990a3272a399304f496e
+2019-02-27 18:22:09,527 INFO     De-Register Packet Received
+2019-02-27 18:22:09,527 INFO     Mac or User not registered
+2019-02-27 18:22:09,527 INFO     Deregistration failed: 21
+2019-02-27 18:22:09,527 DEBUG    RECV: DEREGISTER	tsmith	password	vv:vv:vv:vv	127.0.1.4	1993
+2019-02-27 18:22:09,527 DEBUG    SEND: ACK	21	tsmith	2019-02-27:18:22:09	af4051bddd079cf6e106040d459a245d6264e5c4d494b373624979767ee816d2
