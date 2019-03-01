@@ -68,5 +68,3 @@ while True:
     data = s.recv(1024)
     print (data)
     s.close()
-
-

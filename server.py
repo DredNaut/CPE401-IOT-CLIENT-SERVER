@@ -12,7 +12,7 @@ import logging
 
 # Logging settings
 FORMAT = '%(asctime)s %(levelname)-8s %(message)s'
-logging.basicConfig(filename="./log/test.log",level=logging.NOTSET,format=FORMAT)
+logging.basicConfig(filename="./log/Activity.log",level=logging.NOTSET,format=FORMAT)
 logger = logging.getLogger(__name__)
 
 d = '\t'
@@ -168,13 +168,13 @@ class AckPacket:
         connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
         cursor = connection.cursor()
 
-        format_str = """update login set active = 1 where username LIKE '{username}'""".format(username=self.user)
+        format_str = """update registrar set active = 1 where username LIKE '{username}'""".format(username=self.user)
 
         try:
             with connection:
                 cursor.execute(format_str)
         except sqlite3.IntegrityError:
-            logging.debug("Record not found")
+            logging.warning("Record not found")
         finally:
             logging.info("Setting User to active")
             connection.commit()
@@ -187,13 +187,13 @@ class AckPacket:
         connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
         cursor = connection.cursor()
 
-        format_str = """update login set active = 0 where username LIKE '{username}'""".format(username=self.user)
+        format_str = """update registrar set active = 0 where username LIKE '{username}'""".format(username=self.user)
 
         try:
             with connection:
                 cursor.execute(format_str)
         except sqlite3.IntegrityError:
-            logging.debug("Record not found")
+            logging.warning("Record not found")
         finally:
             self.code = "80"
             logging.info("Setting User to inactive")
@@ -208,7 +208,7 @@ class AckPacket:
         cursor = connection.cursor()
 
         format_str0 = """SELECT * FROM registrar WHERE username LIKE '{username}' AND password LIKE '{password}'""".format(username=self.user,password=self.password)
-        format_str1 = """SELECT * FROM login WHERE username LIKE '{username}' AND active==0""".format(username=self.user)
+        format_str1 = """SELECT * FROM registrar WHERE username LIKE '{username}' AND active==0""".format(username=self.user)
 
         cursor.execute(format_str0)
         if cursor.fetchone():
@@ -219,12 +219,12 @@ class AckPacket:
                 connection.close()
                 return True
             else:
-                logging.debug("User is already logged in")
+                logging.warning("User is already logged in")
                 self.code = "31"
                 connection.close()
                 return False
         else:
-            logging.debug("Could not Login user")
+            logging.warning("Could not Login user")
             self.code = "31"
             connection.close()
             return False
