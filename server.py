@@ -24,7 +24,8 @@ class AckPacket:
 
 # FUNCTION:     __init__
 # DESCRIPTION:  Parameterized Constructor
-    def __init__ (self, user, password, mac, ip, port, raw):
+    def __init__ (self, p_type="", user="", password="", mac="", ip="", port="", raw=""):
+        self.p_type = p_type
         self.raw = raw
         self.user = user
         self.password = password
@@ -40,19 +41,19 @@ class AckPacket:
         self.setTime()
         self.setHash()
 
-        if p_type == "REGISTER":
+        if self.p_type == "REGISTER":
             response = self.parseRegistration()
 
-        elif p_type == "DEREGISTER": 
+        elif self.p_type == "DEREGISTER": 
             response = self.parseDeregistration()
 
-        elif p_type == "LOGIN": 
+        elif self.p_type == "LOGIN": 
             response = self.parseLogin()
 
-        elif p_type == "LOGOFF": 
+        elif self.p_type == "LOGOFF": 
             response = self.parseLogoff()
 
-        elif p_type == "DATA": 
+        elif self.p_type == "DATA": 
             response = self.parseData()
 
         else:
@@ -104,12 +105,17 @@ class AckPacket:
 # DESCRIPTION:  Check if the device is already in the registrar file
     def parseLogin(self):
         logging.info("Login Packet Received")
+        if self.auditLogin() == True:
+            self.setLogin()
+
 
 
 # FUNCTION:     parseLogoff
 # DESCRIPTION:  Check if the device is already in the registrar file
     def parseLogoff(self):
-        loggin.info("Logoff Packet Received")
+        logging.info("Logoff Packet Received")
+        if self.auditLogin() == False:
+            self.setLogoff()
 
 
 # FUNCTION:     parseData
@@ -121,7 +127,7 @@ class AckPacket:
 # FUNCTION:     setRegistration
 # DESCRIPTION:  Check if the device is already in the registrar file
     def setRegistration(self):
-        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/test_programs/iot_server.db")
+        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
         cursor = connection.cursor()
 
         new_entry = (self.user, self.mac, self.ip, self.password)
@@ -141,7 +147,7 @@ class AckPacket:
 # FUNCTION:     removeRegistration
 # DESCRIPTION:  Check if the device is already in the registrar file
     def removeRegistration(self):
-        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/test_programs/iot_server.db")
+        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
         cursor = connection.cursor()
 
         format_str = """DELETE FROM registrar WHERE username LIKE '{username}' AND password LIKE '{password}';""".format(username=self.user,password=self.password)
@@ -156,10 +162,77 @@ class AckPacket:
             connection.close()
 
 
+# FUNCTION:     setLogin
+# DESCRIPTION:  Check if the device is already in the registrar file
+    def setLogin(self):
+        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
+        cursor = connection.cursor()
+
+        format_str = """update login set active = 1 where username LIKE '{username}'""".format(username=self.user)
+
+        try:
+            with connection:
+                cursor.execute(format_str)
+        except sqlite3.IntegrityError:
+            logging.debug("Record not found")
+        finally:
+            logging.info("Setting User to active")
+            connection.commit()
+            connection.close()
+
+
+# FUNCTION:     setLogin
+# DESCRIPTION:  Check if the device is already in the registrar file
+    def setLogoff(self):
+        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
+        cursor = connection.cursor()
+
+        format_str = """update login set active = 0 where username LIKE '{username}'""".format(username=self.user)
+
+        try:
+            with connection:
+                cursor.execute(format_str)
+        except sqlite3.IntegrityError:
+            logging.debug("Record not found")
+        finally:
+            self.code = "80"
+            logging.info("Setting User to inactive")
+            connection.commit()
+            connection.close()
+
+
+# FUNCTION:     auditLogin
+# DESCRIPTION:  Check if the device is already in the registrar file
+    def auditLogin(self):
+        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
+        cursor = connection.cursor()
+
+        format_str0 = """SELECT * FROM registrar WHERE username LIKE '{username}' AND password LIKE '{password}'""".format(username=self.user,password=self.password)
+        format_str1 = """SELECT * FROM login WHERE username LIKE '{username}' AND active==0""".format(username=self.user)
+
+        cursor.execute(format_str0)
+        if cursor.fetchone():
+            logging.info("Found Credentials for user")
+            cursor.execute(format_str1)
+            if cursor.fetchone():
+                self.code = "70"
+                connection.close()
+                return True
+            else:
+                logging.debug("User is already logged in")
+                self.code = "31"
+                connection.close()
+                return False
+        else:
+            logging.debug("Could not Login user")
+            self.code = "31"
+            connection.close()
+            return False
+
 # FUNCTION:     auditRegistration
 # DESCRIPTION:  Check if the device is already in the registrar file
     def auditRegistration(self):
-        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/test_programs/iot_server.db")
+        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
         cursor = connection.cursor()
 
         format_str0 = """SELECT * FROM registrar WHERE username LIKE '{username}' AND mac LIKE '{mac}' AND ip LIKE '{ip}';""".format(username=self.user,mac=self.mac,ip=self.ip)
@@ -204,7 +277,7 @@ class AckPacket:
 # FUNCTION:     auditDeregistration
 # DESCRIPTION:  Check if the device is already in the registrar file
     def auditDeregistration(self):
-        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/test_programs/iot_server.db")
+        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
         cursor = connection.cursor()
 
         format_str0 = """SELECT * FROM registrar WHERE username LIKE '{username}' AND mac LIKE '{mac}' AND ip LIKE '{ip}' AND password LIKE '{password}';""".format(username=self.user,mac=self.mac,ip=self.ip,password=self.password)
@@ -239,17 +312,47 @@ while True:
     sock, addr = s.accept()
     #logging.info(("connection from %s" addr))
     data = sock.recv(1024)
+    print(data)
     fields = data.split('\t')
     if len(fields) > 1:
-        p_type = fields[0]
-        user = fields[1]
-        password = fields[2]
-        mac = fields[3]
-        ip = fields[4]
-        port = fields[5]
+        if fields[0] == "REGISTER" or fields[0] == "DEREGISTER":
+            p_type = fields[0]
+            user = fields[1]
+            password = fields[2]
+            mac = fields[3]
+            ip = fields[4]
+            port = fields[5]
 
-        new_ack = AckPacket(user,password,mac,ip,port,data)
-        response = new_ack.generateAck()
+            new_ack = AckPacket(p_type,user,password,mac,ip,port,data)
+            response = new_ack.generateAck()
+
+        elif fields[0] == "LOGIN": 
+            p_type = fields[0]
+            user = fields[1]
+            password = fields[2]
+            ip = fields[3]
+            port = fields[4]
+
+            new_ack = AckPacket(p_type,user,password,ip,port,data)
+            response = new_ack.generateAck()
+
+        elif fields[0] == "LOGOFF":
+            p_type = fields[0]
+            user = fields[1]
+
+            new_ack = AckPacket(p_type,user,data)
+            response = new_ack.generateAck()
+
+        elif fields[0] == "DATA":
+            p_type = fields[0]
+            d_code = fields[1]
+            user = fields[2]
+            time = fields[3]
+            length = fields[4]
+            message = fields[5]
+
+        else:
+            logging.error("Invalid packet received")
 
 
         if not data: break

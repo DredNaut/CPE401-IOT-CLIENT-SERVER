@@ -1,13 +1,12 @@
 # Connection Oriented Server
 
 from socket import socket, AF_INET, SOCK_STREAM, gethostname
-import os
 import sys
+
+d = "\t"
 
 def register():
     print("REGISTER PACKET:")
-    d = "\t"
-    code = "00"
     mac = raw_input("MAC:\t")
     ip = raw_input("IP:\t")
     port = raw_input("PORT:\t")
@@ -16,10 +15,9 @@ def register():
     packet = "REGISTER"+d+user+d+password+d+mac+d+ip+d+port
     return packet
 
+
 def deregister():
     print("REGISTER PACKET:")
-    d = "\t"
-    code = "00"
     mac = raw_input("MAC:\t")
     ip = raw_input("IP:\t")
     port = raw_input("PORT:\t")
@@ -28,15 +26,36 @@ def deregister():
     packet = "DEREGISTER"+d+user+d+password+d+mac+d+ip+d+port
     return packet
 
+
+def login():
+    print("LOGIN PACKET")
+    user = raw_input("USER:\t")
+    password = raw_input("PASSWORD:\t")
+    ip = raw_input("IP:\t")
+    port = raw_input("PORT:\t")
+    packet = "LOGIN"+d+user+d+password+d+ip+d+port
+    return packet
+
+
+def logoff():
+    print("LOGOFF PACKET")
+    user = raw_input("USER:\t")
+    packet = "LOGOFF"+d+user
+    return packet
+
 while True:
 
-    choice = int(raw_input("(1)\tRegister\n(2)\tDe-Register\n(3)\tExit\nPlease Make a Selection: "))
+    choice = int(raw_input("(1)\tRegister\n(2)\tDe-Register\n(3)\tLogin\n(4)\tLogoff\n(5)\tExit\nPlease Make a Selection: "))
 
     if choice == 1:
         raw_packet = register()
     elif choice == 2:
         raw_packet = deregister()
     elif choice == 3:
+        raw_packet = login()
+    elif choice == 4:
+        raw_packet = logoff()
+    elif choice == 5:
         sys.exit(0) 
     else:
         sys.exit(1)
