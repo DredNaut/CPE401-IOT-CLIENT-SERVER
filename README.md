@@ -1,7 +1,12 @@
 # CPE401-IOT-CLIENT-SERVER
-## Lab 2
+## Current Assignment: Lab 2
 ##### Jared Knutson
 My implementation of a client server protocol for interfacing generic IOT devices. Written in Python.
+
+### Dependancies
+- a folder named "log" in your working directory, this will be where server logs are
+directed to.
+- Python 2.7
 
 ## Files:
 - README.md
@@ -40,3 +45,38 @@ connection the password cannot be read while in transit. Another method of secur
 would be to encrypt the traffic on both ends so that the transmission is secured across an unsecure
 channel. I was not able to find a case to use to test the QUERY/DATA packets as there was no specific
 use case for them yet. 
+
+## Useage:
+#### Running the Client
+Run the following command and then follow the prompt to create the desired packet.
+
+```bash 
+>$ python client.py
+(1) Register
+(2) De-Register
+(3) Login
+(4) Logoff
+(5) Exit
+Please Make a Selection: 1
+```
+
+After this you will be asked for the following information:
+- MAC
+- IP
+- PORT
+- USER/DeviceID
+- Password
+
+The client will then send the packet off to the server which should be listening,
+ if the server is configured correctly the client should receive a ACK packet.
+
+
+#### Running the Server
+The server does not have an interface, it will run without showing any options.
+Any actions will be logged to a log file located at ./log/Activity.log and
+any error will be reported to ./log/error.log
+
+The server can be started by issuing the following command in the terminal
+```bash
+>$ python server.py
+```
