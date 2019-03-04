@@ -12,10 +12,25 @@ import logging
 
 # Logging settings
 FORMAT = '%(asctime)s %(levelname)-8s %(message)s'
-logging.basicConfig(filename="./log/Activity.log",level=logging.NOTSET,format=FORMAT)
-logger = logging.getLogger(__name__)
 
 d = '\t'
+
+def setup_logger(name, log_file, level=logging.INFO):
+    """Function setup as many loggers as you want"""
+
+    handler = logging.FileHandler(log_file)        
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(handler)
+
+    return logger
+
+# Set up file loggers
+activity_logger = setup_logger('Activity', './log/Activity.log')
+error_logger = setup_logger('Error', './log/Error.log')
+
 
 
 # CLASS:        AckPacket
@@ -80,31 +95,31 @@ class AckPacket:
 # FUNCTION:     parseRegister
 # DESCRIPTION:  Check if the device is already in the registrar file
     def parseRegistration(self):
-        logging.info("Register Packet Received")
+        activity_logger.info("Register Packet Received")
         entry = [self.user,self.mac,self.ip,self.password]
         if self.auditRegistration() == False:
-            logging.info("Adding the user to the db")
+            activity_logger.info("Adding the user to the db")
             self.setRegistration()
         elif self.code == "02":
-            logging.info("Updating IP")
+            activity_logger.info("Updating IP")
             self.removeRegistration()
 
 
 # FUNCTION:     parseDeregister
 # DESCRIPTION:  Check if the device is already in the registrar file
     def parseDeregistration(self):
-        logging.info("De-Register Packet Received")
+        activity_logger.info("De-Register Packet Received")
         if self.auditDeregistration() == True:
-            logging.info("User is in the register, removing the user")
+            activity_logger.info("User is in the register, removing the user")
             self.removeRegistration()
         else:
-            logging.info("Deregistration failed: %s" % (self.code))
+            activity_logger.info("Deregistration failed: %s" % (self.code))
 
 
 # FUNCTION:     parseLogin
 # DESCRIPTION:  Check if the device is already in the registrar file
     def parseLogin(self):
-        logging.info("Login Packet Received")
+        activity_logger.info("Login Packet Received")
         if self.auditLogin() == True:
             self.setLogin()
 
@@ -113,7 +128,7 @@ class AckPacket:
 # FUNCTION:     parseLogoff
 # DESCRIPTION:  Check if the device is already in the registrar file
     def parseLogoff(self):
-        logging.info("Logoff Packet Received")
+        activity_logger.info("Logoff Packet Received")
         if self.auditLogin() == False:
             self.setLogoff()
 
@@ -121,7 +136,7 @@ class AckPacket:
 # FUNCTION:     parseData
 # DESCRIPTION:  Check if the device is already in the registrar file
     def parseData(self):
-        logging.info("Data Packet Received")
+        activity_logger.info("Data Packet Received")
 
 
 # FUNCTION:     setRegistration
@@ -138,7 +153,7 @@ class AckPacket:
             with connection:
                 cursor.execute(format_str,new_entry)
         except sqlite3.IntegrityError:
-            logging.info("Record already exists")
+            activity_logger.info("Record already exists")
         finally:
             connection.commit()
             connection.close()
@@ -156,7 +171,7 @@ class AckPacket:
             with connection:
                 cursor.execute(format_str)
         except sqlite3.IntegrityError:
-            logging.info("Record not found")
+            activity_logger.info("Record not found")
         finally:
             connection.commit()
             connection.close()
@@ -176,7 +191,7 @@ class AckPacket:
         except sqlite3.IntegrityError:
             logging.warning("Record not found")
         finally:
-            logging.info("Setting User to active")
+            activity_logger.info("Setting User to active")
             connection.commit()
             connection.close()
 
@@ -196,7 +211,7 @@ class AckPacket:
             logging.warning("Record not found")
         finally:
             self.code = "80"
-            logging.info("Setting User to inactive")
+            activity_logger.info("Setting User to inactive")
             connection.commit()
             connection.close()
 
@@ -212,7 +227,7 @@ class AckPacket:
 
         cursor.execute(format_str0)
         if cursor.fetchone():
-            logging.info("Found Credentials for user")
+            activity_logger.info("Found Credentials for user")
             cursor.execute(format_str1)
             if cursor.fetchone():
                 self.code = "70"
@@ -242,33 +257,33 @@ class AckPacket:
 
         cursor.execute(format_str0)
         if cursor.fetchone():
-            logging.info("Register Found Exact")
+            activity_logger.info("Register Found Exact")
             self.code = "01"
             connection.close()
             return True
         else:
             cursor.execute(format_str1)
             if cursor.fetchone():
-                logging.info("IP needs to be updated")
+                activity_logger.info("IP needs to be updated")
                 self.code = "02"
                 connection.close()
                 return True
             else:
                 cursor.execute(format_str2)
                 if cursor.fetchone():
-                    logging.info("IP reused")
+                    activity_logger.info("IP reused")
                     self.code = "12"
                     connection.close()
                     return True
                 else:
                     cursor.execute(format_str3)
                     if cursor.fetchone():
-                        logging.info("MAC reused")
+                        activity_logger.info("MAC reused")
                         self.code = "13"
                         connection.close()
                         return True
                     else:
-                        logging.info("No match, user not registered")
+                        activity_logger.info("No match, user not registered")
                         self.code = "00"
                         connection.close()
                         return False
@@ -285,19 +300,19 @@ class AckPacket:
 
         cursor.execute(format_str0)
         if cursor.fetchone():
-            logging.info("Entry Found, Removing")
+            activity_logger.info("Entry Found, Removing")
             self.code = "20"
             connection.close()
             return True
         else:
             cursor.execute(format_str1)
             if cursor.fetchone():
-                logging.info("User registered to another ip or mac cannot remove")
+                activity_logger.info("User registered to another ip or mac cannot remove")
                 self.code = "30"
                 connection.close()
                 return False
             else:
-                logging.info("Mac or User not registered")
+                activity_logger.info("Mac or User not registered")
                 self.code = "21"
                 connection.close()
                 return False
@@ -356,7 +371,7 @@ while True:
 
 
         if not data: break
-        logging.debug("RECV: "+data)
-        logging.debug("SEND: "+response)
+        error_logger.info("RECV: "+data)
+        error_logger.info("SEND: "+response)
         sock.send(response) # echo
     sock.close()
