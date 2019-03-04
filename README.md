@@ -1,6 +1,6 @@
 # CPE401-IOT-CLIENT-SERVER
 ## Lab 2
-#### Jared Knutson
+##### Jared Knutson
 My implementation of a client server protocol for interfacing generic IOT devices. Written in Python.
 
 ## Files:
@@ -11,29 +11,29 @@ My implementation of a client server protocol for interfacing generic IOT device
 - Register
 - Login
 
-### server.py
+#### server.py
 Purpose: To provide a means of storing and retrieving data related to
 the lab. This server listens for corretly formatted UDP packets from a client.
 The server stores the clients data inside of a SQLite database which
 is included with the files submitted. The table names are "registrar" and
 "login".
 
-### client.py
+#### client.py
 Purpose: To provide a client to interact with the server. The client provides
 a menu for sending packets to the server. The user determines the port number
 mac, ip, device-id, and password for the message to the server.
 
-### iot_server.db
+#### iot_server.db
 Purpose: This file is a SQLite database which is the container for the data
 passed to the server from the client. Contains two tables, registrar and login.
 
-### Register
+#### Register
 Purpose: Test file for testing all register and deregister situations
 
-### Login
+#### Login
 Purpose: Test file for testing all login and logoff situations
 
-### Major Issues
+#### Major Issues
 The idea of storing passwords in plaintext is a major issue, the client should
 hash the password before it is sent to the server so that if there is anyone evedropping on the
 connection the password cannot be read while in transit. Another method of securing this protocol
