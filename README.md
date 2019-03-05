@@ -1,6 +1,7 @@
 # CPE401-IOT-CLIENT-SERVER
 ## Current Assignment: Lab 2
 ##### Jared Knutson
+Github: https://github.com/DredNaut/CPE401-IOT-CLIENT-SERVER
 My implementation of a client server protocol for interfacing generic IOT devices. Written in Python.
 
 ### Dependancies
@@ -80,3 +81,8 @@ The server can be started by issuing the following command in the terminal
 ```bash
 >$ python server.py
 ```
+
+### MISSING:
+Missing from this assignment is the full implementation of querying the device.
+The infomation provided in the overview of this lab does not provide enough detail
+to implement querying and data in client and server.

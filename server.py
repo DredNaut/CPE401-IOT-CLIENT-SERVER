@@ -9,6 +9,8 @@ import datetime
 import sqlite3
 import hashlib
 import logging
+from threading import Thread
+import sys
 
 # Logging settings
 FORMAT = '%(asctime)s %(levelname)-8s %(message)s'
@@ -19,7 +21,7 @@ def setup_logger(name, log_file, level=logging.INFO):
     """Function setup as many loggers as you want"""
 
     handler = logging.FileHandler(log_file)        
-    handler.setFormatter(formatter)
+    handler.setFormatter(FORMAT)
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
@@ -318,60 +320,105 @@ class AckPacket:
                 return False
 
 
+def auditQuery(user):
+    connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
+    cursor = connection.cursor()
+
+    format_str0 = """SELECT * FROM registrar WHERE username LIKE '{username}' AND active==1""".format(username=user)
+
+    cursor.execute(format_str0)
+    if cursor.fetchone():
+        activity_logger.info("Found Credentials for user")
+        connection.close()
+        return True
+    else:
+        connection.close()
+        return False
+    
+
+def Listen(sock):
+    while True:
+        sock, addr = s.accept()
+        #logging.info(("connection from %s" addr))
+        data = sock.recv(1024)
+        logging.info(data)
+        fields = data.split('\t')
+        if len(fields) > 1:
+            if fields[0] == "REGISTER" or fields[0] == "DEREGISTER":
+                p_type = fields[0]
+                user = fields[1]
+                password = fields[2]
+                mac = fields[3]
+                ip = fields[4]
+                port = fields[5]
+
+                new_ack = AckPacket(p_type,user,password,mac,ip,port,data)
+                response = new_ack.generateAck()
+
+            elif fields[0] == "LOGIN": 
+                p_type = fields[0]
+                user = fields[1]
+                password = fields[2]
+                ip = fields[3]
+                port = fields[4]
+
+                new_ack = AckPacket(p_type,user,password,ip,port,data)
+                response = new_ack.generateAck()
+
+            elif fields[0] == "LOGOFF":
+                p_type = fields[0]
+                user = fields[1]
+
+                new_ack = AckPacket(p_type,user,data)
+                response = new_ack.generateAck()
+
+            elif fields[0] == "DATA":
+                p_type = fields[0]
+                d_code = fields[1]
+                user = fields[2]
+                time = fields[3]
+                length = fields[4]
+                message = fields[5]
+
+            else:
+                logging.error("Invalid packet received")
+
+
+            if not data: break
+            error_logger.info("RECV: "+data)
+            error_logger.info("SEND: "+response)
+            sock.send(response) # echo
+        sock.close()
+
+
+def sendQuery(user)
+    current = datetime.datetime.now()
+    currentDT = currentDT.strftime("%Y-%m-%d:%H:%M:%S")
+    query = "QUERY 00 asmith "+currentDT
+
+    (SERVER, PORT) = ('127.0.0.1', 1994)
+    s = socket(AF_INET, SOCK_STREAM)
+    s.connect((SERVER,PORT))
+    s.send(query)
+    data = s.recv(1024)
+    print (data)
+    s.close()
+
+
 # FUNCTION:     Main
 s = socket(AF_INET, SOCK_STREAM)
 s.bind(('127.0.0.1', 1994))
 s.listen(5) # max queued connections
-
+t = Thread(target=Listen, args=(s,))
+t.daemon=True
+t.start()
 while True:
-    sock, addr = s.accept()
-    #logging.info(("connection from %s" addr))
-    data = sock.recv(1024)
-    print(data)
-    fields = data.split('\t')
-    if len(fields) > 1:
-        if fields[0] == "REGISTER" or fields[0] == "DEREGISTER":
-            p_type = fields[0]
-            user = fields[1]
-            password = fields[2]
-            mac = fields[3]
-            ip = fields[4]
-            port = fields[5]
-
-            new_ack = AckPacket(p_type,user,password,mac,ip,port,data)
-            response = new_ack.generateAck()
-
-        elif fields[0] == "LOGIN": 
-            p_type = fields[0]
-            user = fields[1]
-            password = fields[2]
-            ip = fields[3]
-            port = fields[4]
-
-            new_ack = AckPacket(p_type,user,password,ip,port,data)
-            response = new_ack.generateAck()
-
-        elif fields[0] == "LOGOFF":
-            p_type = fields[0]
-            user = fields[1]
-
-            new_ack = AckPacket(p_type,user,data)
-            response = new_ack.generateAck()
-
-        elif fields[0] == "DATA":
-            p_type = fields[0]
-            d_code = fields[1]
-            user = fields[2]
-            time = fields[3]
-            length = fields[4]
-            message = fields[5]
-
+    choice = raw_input("(1)\tSend Query\n(2)\tExit\nPlease Make a Selection: ")
+    if choice == "1":
+        user = raw_input("Enter the query you would like to query: ")
+        if auditQuery(user) == True:
+            print("Sending Query")
         else:
-            logging.error("Invalid packet received")
-
-
-        if not data: break
-        error_logger.info("RECV: "+data)
-        error_logger.info("SEND: "+response)
-        sock.send(response) # echo
-    sock.close()
+            print("User is not logged in or no user exists")
+    else:
+        sys.exit(0)
