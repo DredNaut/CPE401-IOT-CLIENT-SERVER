@@ -17,7 +17,7 @@ FORMAT = '%(asctime)s %(levelname)-8s %(message)s'
 
 d = '\t'
 
-def setup_logger(name, log_file, level=logging.INFO):
+def setup_logger(name, log_file, level=logging.ERROR):
     """Function setup as many loggers as you want"""
 
     handler = logging.FileHandler(log_file)        
@@ -385,24 +385,24 @@ def Listen(sock):
 
 
             if not data: break
-            error_logger.info("RECV: "+data)
-            error_logger.info("SEND: "+response)
+            logging.info("RECV: "+data)
+            logging.info("SEND: "+response)
             sock.send(response) # echo
         sock.close()
 
 
-def sendQuery(user)
-    current = datetime.datetime.now()
-    currentDT = currentDT.strftime("%Y-%m-%d:%H:%M:%S")
-    query = "QUERY 00 asmith "+currentDT
-
-    (SERVER, PORT) = ('127.0.0.1', 1994)
-    s = socket(AF_INET, SOCK_STREAM)
-    s.connect((SERVER,PORT))
-    s.send(query)
-    data = s.recv(1024)
-    print (data)
-    s.close()
+#def sendQuery(user)
+#    current = datetime.datetime.now()
+#    currentDT = currentDT.strftime("%Y-%m-%d:%H:%M:%S")
+#    query = "QUERY 00 asmith "+currentDT
+#
+#    (SERVER, PORT) = ('127.0.0.1', 1994)
+#    s = socket(AF_INET, SOCK_STREAM)
+#    s.connect((SERVER,PORT))
+#    s.send(query)
+#    data = s.recv(1024)
+#    print (data)
+#    s.close()
 
 
 # FUNCTION:     Main
@@ -415,7 +415,7 @@ t.start()
 while True:
     choice = raw_input("(1)\tSend Query\n(2)\tExit\nPlease Make a Selection: ")
     if choice == "1":
-        user = raw_input("Enter the query you would like to query: ")
+        user = raw_input("Enter the user you would like to query: ")
         if auditQuery(user) == True:
             print("Sending Query")
         else:

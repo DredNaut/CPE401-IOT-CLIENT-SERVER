@@ -1,7 +1,8 @@
 # Connection Oriented Server
 
-from socket import socket, AF_INET, SOCK_STREAM, gethostname
+from socket import socket, AF_INET, SOCK_STREAM, gethostname, error
 import sys
+import errno
 
 d = "\t"
 
@@ -62,9 +63,18 @@ while True:
 
     (SERVER, PORT) = ('127.0.0.1', 1994)
     s = socket(AF_INET, SOCK_STREAM)
-    s.connect((SERVER,PORT))
 
-    s.send(raw_packet)
-    data = s.recv(1024)
-    print (data)
-    s.close()
+    # Attempt to connect to the server
+    try:
+        s.connect((SERVER,PORT))
+
+        s.send(raw_packet)
+        data = s.recv(1024)
+        print (data)
+        s.close()
+
+    # Catch if connection refused
+    except error as e:
+        if e.errno == errno.ECONNREFUSED:
+            print ("Error connecting to the server.")
+

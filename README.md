@@ -7,7 +7,7 @@ My implementation of a client server protocol for interfacing generic IOT device
 ### Dependancies
 - a folder named "log" in your working directory, this will be where server logs are
 directed to.
-- Python 2.7
+- Version: Python 2.7
 
 ## Files:
 - README.md
