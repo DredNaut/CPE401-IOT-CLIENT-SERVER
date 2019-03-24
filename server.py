@@ -14,6 +14,7 @@ import sys
 
 # Logging settings
 FORMAT = '%(asctime)s %(levelname)-8s %(message)s'
+server_port = int(sys.argv[1])
 
 d = '\t'
 
@@ -144,7 +145,7 @@ class AckPacket:
 # FUNCTION:     setRegistration
 # DESCRIPTION:  Check if the device is already in the registrar file
     def setRegistration(self):
-        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
+        connection = sqlite3.connect("./iot_server.db")
         cursor = connection.cursor()
 
         new_entry = (self.user, self.mac, self.ip, self.password)
@@ -164,7 +165,7 @@ class AckPacket:
 # FUNCTION:     removeRegistration
 # DESCRIPTION:  Check if the device is already in the registrar file
     def removeRegistration(self):
-        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
+        connection = sqlite3.connect("./iot_server.db")
         cursor = connection.cursor()
 
         format_str = """DELETE FROM registrar WHERE username LIKE '{username}' AND password LIKE '{password}';""".format(username=self.user,password=self.password)
@@ -182,7 +183,7 @@ class AckPacket:
 # FUNCTION:     setLogin
 # DESCRIPTION:  Check if the device is already in the registrar file
     def setLogin(self):
-        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
+        connection = sqlite3.connect("./iot_server.db")
         cursor = connection.cursor()
 
         format_str = """update registrar set active = 1 where username LIKE '{username}'""".format(username=self.user)
@@ -201,7 +202,7 @@ class AckPacket:
 # FUNCTION:     setLogin
 # DESCRIPTION:  Check if the device is already in the registrar file
     def setLogoff(self):
-        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
+        connection = sqlite3.connect("./iot_server.db")
         cursor = connection.cursor()
 
         format_str = """update registrar set active = 0 where username LIKE '{username}'""".format(username=self.user)
@@ -221,7 +222,7 @@ class AckPacket:
 # FUNCTION:     auditLogin
 # DESCRIPTION:  Check if the device is already in the registrar file
     def auditLogin(self):
-        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
+        connection = sqlite3.connect("./iot_server.db")
         cursor = connection.cursor()
 
         format_str0 = """SELECT * FROM registrar WHERE username LIKE '{username}' AND password LIKE '{password}'""".format(username=self.user,password=self.password)
@@ -249,7 +250,7 @@ class AckPacket:
 # FUNCTION:     auditRegistration
 # DESCRIPTION:  Check if the device is already in the registrar file
     def auditRegistration(self):
-        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
+        connection = sqlite3.connect("./iot_server.db")
         cursor = connection.cursor()
 
         format_str0 = """SELECT * FROM registrar WHERE username LIKE '{username}' AND mac LIKE '{mac}' AND ip LIKE '{ip}';""".format(username=self.user,mac=self.mac,ip=self.ip)
@@ -294,7 +295,7 @@ class AckPacket:
 # FUNCTION:     auditDeregistration
 # DESCRIPTION:  Check if the device is already in the registrar file
     def auditDeregistration(self):
-        connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
+        connection = sqlite3.connect("./iot_server.db")
         cursor = connection.cursor()
 
         format_str0 = """SELECT * FROM registrar WHERE username LIKE '{username}' AND mac LIKE '{mac}' AND ip LIKE '{ip}' AND password LIKE '{password}';""".format(username=self.user,mac=self.mac,ip=self.ip,password=self.password)
@@ -321,7 +322,7 @@ class AckPacket:
 
 
 def auditQuery(user):
-    connection = sqlite3.connect("/Users/drednaut/Courses/Latex_Course_Files/CPE401/CPE401-IOT-CLIENT-SERVER/iot_server.db")
+    connection = sqlite3.connect("./iot_server.db")
     cursor = connection.cursor()
 
     format_str0 = """SELECT * FROM registrar WHERE username LIKE '{username}' AND active==1""".format(username=user)
@@ -391,23 +392,23 @@ def Listen(sock):
         sock.close()
 
 
-#def sendQuery(user)
-#    current = datetime.datetime.now()
-#    currentDT = currentDT.strftime("%Y-%m-%d:%H:%M:%S")
-#    query = "QUERY 00 asmith "+currentDT
-#
-#    (SERVER, PORT) = ('127.0.0.1', 1994)
-#    s = socket(AF_INET, SOCK_STREAM)
-#    s.connect((SERVER,PORT))
-#    s.send(query)
-#    data = s.recv(1024)
-#    print (data)
-#    s.close()
+def sendQuery(user):
+    current = datetime.datetime.now()
+    currentDT = currentDT.strftime("%Y-%m-%d:%H:%M:%S")
+    query = "QUERY "+currentDT
+
+    (SERVER, PORT) = ('127.0.0.1', 1994)
+    s = socket(AF_INET, SOCK_STREAM)
+    s.connect((SERVER,PORT))
+    s.send(query)
+    data = s.recv(1024)
+    print (data)
+    s.close()
 
 
 # FUNCTION:     Main
 s = socket(AF_INET, SOCK_STREAM)
-s.bind(('127.0.0.1', 1994))
+s.bind(('127.0.0.1', server_port))
 s.listen(5) # max queued connections
 t = Thread(target=Listen, args=(s,))
 t.daemon=True
