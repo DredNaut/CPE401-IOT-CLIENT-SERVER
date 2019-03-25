@@ -9,6 +9,12 @@ My implementation of a client server protocol for interfacing generic IOT device
 directed to.
 - Version: Python 2.7
 
+## Logs:
+- use tail -F command to monitor log file
+```
+tail -F ./log/Activity.log
+```
+
 ## Files:
 - README.md
 - server.py
@@ -52,12 +58,14 @@ use case for them yet.
 Run the following command and then follow the prompt to create the desired packet.
 
 ```bash 
->$ python client.py
+>$ python client.py <device-id> <server-ip> <server-port> <device-port>
 (1) Register
 (2) De-Register
 (3) Login
 (4) Logoff
-(5) Exit
+(5) Query Server
+(6) Query Client
+(7) Exit
 Please Make a Selection: 1
 ```
 
@@ -79,10 +87,5 @@ any error will be reported to ./log/error.log
 
 The server can be started by issuing the following command in the terminal
 ```bash
->$ python server.py
+>$ python server.py <listening-port>
 ```
-
-### MISSING:
-Missing from this assignment is the full implementation of querying the device.
-The infomation provided in the overview of this lab does not provide enough detail
-to implement querying and data in client and server.

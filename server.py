@@ -13,27 +13,10 @@ from threading import Thread
 import sys
 
 # Logging settings
-FORMAT = '%(asctime)s %(levelname)-8s %(message)s'
 server_port = int(sys.argv[1])
-
 d = '\t'
-
-def setup_logger(name, log_file, level=logging.ERROR):
-    """Function setup as many loggers as you want"""
-
-    handler = logging.FileHandler(log_file)        
-    handler.setFormatter(FORMAT)
-
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
-    logger.addHandler(handler)
-
-    return logger
-
-# Set up file loggers
-activity_logger = setup_logger('Activity', './log/Activity.log')
-error_logger = setup_logger('Error', './log/Error.log')
-
+logging.basicConfig(filename='./log/Activity.log',level=logging.DEBUG)
+open("./log/Activity.log","w+").close()
 
 
 # CLASS:        AckPacket
@@ -42,14 +25,54 @@ class AckPacket:
 
 # FUNCTION:     __init__
 # DESCRIPTION:  Parameterized Constructor
-    def __init__ (self, p_type="", user="", password="", mac="", ip="", port="", raw=""):
-        self.p_type = p_type
-        self.raw = raw
-        self.user = user
-        self.password = password
-        self.mac = mac
-        self.ip = ip
-        self.port = port
+    def __init__ (self,data):
+        self.data = data
+        fields = data.split('\t')
+        if len(fields) > 1:
+            if fields[0] == "REGISTER" or fields[0] == "DEREGISTER":
+                self.p_type = fields[0]
+                self.user = fields[1]
+                self.password = fields[2]
+                self.mac = fields[3]
+                self.ip = fields[4]
+                self.port = fields[5]
+
+            elif fields[0] == "LOGIN": 
+                self.p_type = fields[0]
+                self.user = fields[1]
+                self.password = fields[2]
+                self.ip = fields[3]
+                self.port = fields[4]
+
+            elif fields[0] == "LOGOFF":
+                self.p_type = fields[0]
+                self.user = fields[1]
+
+            elif fields[0] == "DATA":
+                self.p_type = fields[0]
+                self.d_code = fields[1]
+                self.user = fields[2]
+                self.time = fields[3]
+                self.length = fields[4]
+                self.message = fields[5]
+
+            elif fields[0] == "QUERY":
+                self.p_type = fields[0]
+                self.q_code = fields[1]
+                self.user = fields[2]
+                self.time = fields[3]
+                self.target_device = fields[4]
+
+            elif fields[0] == "ACK":
+                self.p_type = fields[0]
+                logging.info(self.data)
+
+            elif fields[0] == "STATUS":
+                self.p_type = fields[0]
+                self.user = fields[2]
+                
+            else:
+                logging.error(self.data)
 
 
 # FUNCTION:     generateAck
@@ -61,23 +84,31 @@ class AckPacket:
 
         if self.p_type == "REGISTER":
             response = self.parseRegistration()
+            response = "ACK"+d+self.code+d+self.user+d+self.time+d+self.hash
 
         elif self.p_type == "DEREGISTER": 
             response = self.parseDeregistration()
+            response = "ACK"+d+self.code+d+self.user+d+self.time+d+self.hash
 
         elif self.p_type == "LOGIN": 
             response = self.parseLogin()
+            response = "ACK"+d+self.code+d+self.user+d+self.time+d+self.hash
 
         elif self.p_type == "LOGOFF": 
             response = self.parseLogoff()
+            response = "ACK"+d+self.code+d+self.user+d+self.time+d+self.hash
 
         elif self.p_type == "DATA": 
             response = self.parseData()
 
+        elif self.p_type == "QUERY": 
+            response = self.parseQuery()
+
+        elif self.p_type == "STATUS":
+            response = "ACK\t40"+d+self.user+d+self.time+d+self.hash
+
         else:
             print("")
-
-        response = "ACK"+d+self.code+d+self.user+d+self.time+d+self.hash
 
         return response
 
@@ -85,7 +116,7 @@ class AckPacket:
 # FUNCTION:     setHash
 # DESCRIPTION:  Check if the device is already in the registrar file
     def setHash(self):
-        self.hash = hashlib.sha256(self.raw).hexdigest()
+        self.hash = hashlib.sha256(self.data).hexdigest()
 
 
 # FUNCTION:     setTime
@@ -98,31 +129,31 @@ class AckPacket:
 # FUNCTION:     parseRegister
 # DESCRIPTION:  Check if the device is already in the registrar file
     def parseRegistration(self):
-        activity_logger.info("Register Packet Received")
+        logging.info("Register Packet Received")
         entry = [self.user,self.mac,self.ip,self.password]
         if self.auditRegistration() == False:
-            activity_logger.info("Adding the user to the db")
+            logging.info("Adding the user to the db")
             self.setRegistration()
         elif self.code == "02":
-            activity_logger.info("Updating IP")
+            logging.info("Updating IP")
             self.removeRegistration()
 
 
 # FUNCTION:     parseDeregister
 # DESCRIPTION:  Check if the device is already in the registrar file
     def parseDeregistration(self):
-        activity_logger.info("De-Register Packet Received")
+        logging.info("De-Register Packet Received")
         if self.auditDeregistration() == True:
-            activity_logger.info("User is in the register, removing the user")
+            logging.info("User is in the register, removing the user")
             self.removeRegistration()
         else:
-            activity_logger.info("Deregistration failed: %s" % (self.code))
+            logging.info("Deregistration failed: %s" % (self.code))
 
 
 # FUNCTION:     parseLogin
 # DESCRIPTION:  Check if the device is already in the registrar file
     def parseLogin(self):
-        activity_logger.info("Login Packet Received")
+        logging.info("Login Packet Received")
         if self.auditLogin() == True:
             self.setLogin()
 
@@ -131,7 +162,7 @@ class AckPacket:
 # FUNCTION:     parseLogoff
 # DESCRIPTION:  Check if the device is already in the registrar file
     def parseLogoff(self):
-        activity_logger.info("Logoff Packet Received")
+        logging.info("Logoff Packet Received")
         if self.auditLogin() == False:
             self.setLogoff()
 
@@ -139,7 +170,34 @@ class AckPacket:
 # FUNCTION:     parseData
 # DESCRIPTION:  Check if the device is already in the registrar file
     def parseData(self):
-        activity_logger.info("Data Packet Received")
+        logging.info("Data Packet Received")
+
+    def parseQuery(self):
+        logging.info("Query Packet Received")
+        # Query for IP and Port
+        if self.q_code == "01":
+            if auditQuery(self.target_device):
+                logging.info("User found and logged in")
+                connection = sqlite3.connect("./iot_server.db")
+                cursor = connection.cursor()
+
+                format_str0 = """SELECT ip,port FROM registrar WHERE username LIKE '{username}'""".format(username=self.user)
+                cursor.execute(format_str0)
+                mydata = cursor.fetchall()
+                ip,port = mydata[0]
+                message = ip+d+port
+                response = "DATA"+d+"01"+d+self.user+d+self.time+d+str(len(message))+d+message
+
+            elif userExists(self.user):
+                logging.error("User is not logged in")
+                response = "DATA"+d+"12"+d+self.user+d+self.time+d+str(len(self.target_device))+d+self.target_device
+            else:
+                logging.error("User not found")
+                response = "DATA"+d+"11"+d+self.user+d+self.time+d+str(len(self.target_device))+d+self.target_device
+        else:
+            logging.error("Query Type Not Recognized")
+        return response
+
 
 
 # FUNCTION:     setRegistration
@@ -148,15 +206,15 @@ class AckPacket:
         connection = sqlite3.connect("./iot_server.db")
         cursor = connection.cursor()
 
-        new_entry = (self.user, self.mac, self.ip, self.password)
-        format_str = """INSERT INTO registrar (username, mac, ip, password)
-        VALUES (?,?,?,?);"""
+        new_entry = (self.user, self.mac, self.ip, self.password,self.port)
+        format_str = """INSERT INTO registrar (username, mac, ip, password,port)
+        VALUES (?,?,?,?,?);"""
 
         try:
             with connection:
                 cursor.execute(format_str,new_entry)
         except sqlite3.IntegrityError:
-            activity_logger.info("Record already exists")
+            logging.info("Record already exists")
         finally:
             connection.commit()
             connection.close()
@@ -174,7 +232,7 @@ class AckPacket:
             with connection:
                 cursor.execute(format_str)
         except sqlite3.IntegrityError:
-            activity_logger.info("Record not found")
+            logging.info("Record not found")
         finally:
             connection.commit()
             connection.close()
@@ -194,7 +252,7 @@ class AckPacket:
         except sqlite3.IntegrityError:
             logging.warning("Record not found")
         finally:
-            activity_logger.info("Setting User to active")
+            logging.info("Setting User to active")
             connection.commit()
             connection.close()
 
@@ -214,7 +272,7 @@ class AckPacket:
             logging.warning("Record not found")
         finally:
             self.code = "80"
-            activity_logger.info("Setting User to inactive")
+            logging.info("Setting User to inactive")
             connection.commit()
             connection.close()
 
@@ -230,7 +288,7 @@ class AckPacket:
 
         cursor.execute(format_str0)
         if cursor.fetchone():
-            activity_logger.info("Found Credentials for user")
+            logging.info("Found Credentials for user")
             cursor.execute(format_str1)
             if cursor.fetchone():
                 self.code = "70"
@@ -260,33 +318,33 @@ class AckPacket:
 
         cursor.execute(format_str0)
         if cursor.fetchone():
-            activity_logger.info("Register Found Exact")
+            logging.info("Register Found Exact")
             self.code = "01"
             connection.close()
             return True
         else:
             cursor.execute(format_str1)
             if cursor.fetchone():
-                activity_logger.info("IP needs to be updated")
+                logging.info("IP needs to be updated")
                 self.code = "02"
                 connection.close()
                 return True
             else:
                 cursor.execute(format_str2)
                 if cursor.fetchone():
-                    activity_logger.info("IP reused")
+                    logging.info("IP reused")
                     self.code = "12"
                     connection.close()
                     return True
                 else:
                     cursor.execute(format_str3)
                     if cursor.fetchone():
-                        activity_logger.info("MAC reused")
+                        logging.info("MAC reused")
                         self.code = "13"
                         connection.close()
                         return True
                     else:
-                        activity_logger.info("No match, user not registered")
+                        logging.info("No match, user not registered")
                         self.code = "00"
                         connection.close()
                         return False
@@ -303,19 +361,19 @@ class AckPacket:
 
         cursor.execute(format_str0)
         if cursor.fetchone():
-            activity_logger.info("Entry Found, Removing")
+            logging.info("Entry Found, Removing")
             self.code = "20"
             connection.close()
             return True
         else:
             cursor.execute(format_str1)
             if cursor.fetchone():
-                activity_logger.info("User registered to another ip or mac cannot remove")
+                logging.info("User registered to another ip or mac cannot remove")
                 self.code = "30"
                 connection.close()
                 return False
             else:
-                activity_logger.info("Mac or User not registered")
+                logging.info("Mac or User not registered")
                 self.code = "21"
                 connection.close()
                 return False
@@ -329,13 +387,27 @@ def auditQuery(user):
 
     cursor.execute(format_str0)
     if cursor.fetchone():
-        activity_logger.info("Found Credentials for user")
+        logging.info("Found Credentials for user")
         connection.close()
         return True
     else:
         connection.close()
         return False
     
+def userExists(user):
+    connection = sqlite3.connect("./iot_server.db")
+    cursor = connection.cursor()
+
+    format_str0 = """SELECT * FROM registrar WHERE username LIKE '{username}'""".format(username=user)
+
+    cursor.execute(format_str0)
+    if cursor.fetchone() is not None:
+        logging.info("Found Credentials for user")
+        connection.close()
+        return True
+    else:
+        connection.close()
+        return False
 
 def Listen(sock):
     while True:
@@ -343,52 +415,14 @@ def Listen(sock):
         #logging.info(("connection from %s" addr))
         data = sock.recv(1024)
         logging.info(data)
-        fields = data.split('\t')
-        if len(fields) > 1:
-            if fields[0] == "REGISTER" or fields[0] == "DEREGISTER":
-                p_type = fields[0]
-                user = fields[1]
-                password = fields[2]
-                mac = fields[3]
-                ip = fields[4]
-                port = fields[5]
-
-                new_ack = AckPacket(p_type,user,password,mac,ip,port,data)
-                response = new_ack.generateAck()
-
-            elif fields[0] == "LOGIN": 
-                p_type = fields[0]
-                user = fields[1]
-                password = fields[2]
-                ip = fields[3]
-                port = fields[4]
-
-                new_ack = AckPacket(p_type,user,password,ip,port,data)
-                response = new_ack.generateAck()
-
-            elif fields[0] == "LOGOFF":
-                p_type = fields[0]
-                user = fields[1]
-
-                new_ack = AckPacket(p_type,user,data)
-                response = new_ack.generateAck()
-
-            elif fields[0] == "DATA":
-                p_type = fields[0]
-                d_code = fields[1]
-                user = fields[2]
-                time = fields[3]
-                length = fields[4]
-                message = fields[5]
-
-            else:
-                logging.error("Invalid packet received")
+        new_ack = AckPacket(data)
+        response = new_ack.generateAck()
 
 
-            if not data: break
-            logging.info("RECV: "+data)
-            logging.info("SEND: "+response)
-            sock.send(response) # echo
+
+        logging.info("RECV: "+data)
+        logging.info("SEND: "+response)
+        sock.send(response) # echo
         sock.close()
 
 
@@ -402,7 +436,7 @@ def sendQuery(user):
     s.connect((SERVER,PORT))
     s.send(query)
     data = s.recv(1024)
-    print (data)
+    logging.info(data)
     s.close()
 
 
@@ -418,8 +452,8 @@ while True:
     if choice == "1":
         user = raw_input("Enter the user you would like to query: ")
         if auditQuery(user) == True:
-            print("Sending Query")
+            logging.info("Sending Query")
         else:
-            print("User is not logged in or no user exists")
+            logging.info("User is not logged in or no user exists")
     else:
         sys.exit(0)
