@@ -1,13 +1,54 @@
-INFO:root:QUERY	01	asmith	2019-03-25:11:22:16	bsmith
-INFO:root:Query Packet Received
+INFO:root:REGISTER	asmith	password	bb:bb:bb:bb:bb:bb	127.0.0.1	1995
+INFO:root:Register Packet Received
+INFO:root:No match, user not registered
+INFO:root:Adding the user to the db
+INFO:root:RECV: REGISTER	asmith	password	bb:bb:bb:bb:bb:bb	127.0.0.1	1995
+INFO:root:SEND: ACK	00	asmith	2019-04-01:11:39:26	0b1c69e6fbe59c660d87ece26bbeff2b8c2a97dd70560b41981e9e60bbf7c7dc
+INFO:root:ACK	00	asmith	2019-04-01:11:39:26	0b1c69e6fbe59c660d87ece26bbeff2b8c2a97dd70560b41981e9e60bbf7c7dc
+INFO:root:REGISTER	bsmith	password	cc:cc:cc:cc:cc:cc	127.0.0.1	1996
+INFO:root:Register Packet Received
+INFO:root:No match, user not registered
+INFO:root:Adding the user to the db
+INFO:root:RECV: REGISTER	bsmith	password	cc:cc:cc:cc:cc:cc	127.0.0.1	1996
+INFO:root:SEND: ACK	00	bsmith	2019-04-01:11:40:04	c49f4ea409a0eb9569cd65a553e5b51d89826e63346f041bf6ba9acab9bfca1d
+INFO:root:ACK	00	bsmith	2019-04-01:11:40:04	c49f4ea409a0eb9569cd65a553e5b51d89826e63346f041bf6ba9acab9bfca1d
+INFO:root:STATUS	01	asmith	2019-04-01:11:41:28	9	heartbeat
+INFO:root:RECV: STATUS	01	asmith	2019-04-01:11:41:28	9	heartbeat
+INFO:root:SEND: ACK	40	asmith	2019-04-01:11:41:28	844e25c1e63997092aa3201b9057a82dc5141b2abfcea6db295d0e3e590a75fd
+INFO:root:LOGIN	bsmith	password	127.0.0.1	1996
+INFO:root:Login Packet Received
 INFO:root:Found Credentials for user
-ERROR:root:User is not logged in
-INFO:root:RECV: QUERY	01	asmith	2019-03-25:11:22:16	bsmith
-INFO:root:SEND: DATA	12	asmith	2019-03-25:11:22:16	6	bsmith
-INFO:root:DATA	12	asmith	2019-03-25:11:22:16	6	bsmith
-INFO:root:STATUS	01	asmith	2019-03-25:11:22:25	9	heartbeat
-INFO:root:RECV: STATUS	01	asmith	2019-03-25:11:22:25	9	heartbeat
-INFO:root:SEND: ACK	40	asmith	2019-03-25:11:22:25	a7520c023c1fc0762d20f949a1695d684c4bd232e8308534d83032937082365e
-INFO:root:STATUS	01	asmith	2019-03-25:11:23:58	9	heartbeat
-INFO:root:RECV: STATUS	01	asmith	2019-03-25:11:23:58	9	heartbeat
-INFO:root:SEND: ACK	40	asmith	2019-03-25:11:23:58	f1d0b543e827a0646902efdc672017f2b304b389311358f5294999d423c640a5
+INFO:root:Setting User to active
+INFO:root:RECV: LOGIN	bsmith	password	127.0.0.1	1996
+INFO:root:SEND: ACK	70	bsmith	2019-04-01:11:41:33	17969a68238486c3dde917f1cfcd12016b4925de5f7d66d03959cbfee6fc9af2
+INFO:root:ACK	70	bsmith	2019-04-01:11:41:33	17969a68238486c3dde917f1cfcd12016b4925de5f7d66d03959cbfee6fc9af2
+INFO:root:STATUS	01	bsmith	2019-04-01:11:41:35	9	heartbeat
+INFO:root:RECV: STATUS	01	bsmith	2019-04-01:11:41:35	9	heartbeat
+INFO:root:SEND: ACK	40	bsmith	2019-04-01:11:41:35	a780a614dd9b0ec8eafb3e3f3420e95141152bcdcf6a3c98f877c3c423634133
+INFO:root:Received message:QUERY	01	asmith	127.0.0.1	1995	2019-04-01:11:43:00	bsmith
+INFO:root:Received message:DATA	01	bsmith	127.0.0.1	1996	2019-04-01:11:43:00	6	bsmith
+INFO:root:Received message:ACK	50	asmith	2019-04-01:11:43:00	5ca387fd7961750f45ee0f7c5f8c8ec59f81ce484e7ac93cb9fccf5e666c90d1
+INFO:root:STATUS	01	asmith	2019-04-01:11:44:28	9	heartbeat
+INFO:root:RECV: STATUS	01	asmith	2019-04-01:11:44:28	9	heartbeat
+INFO:root:SEND: ACK	40	asmith	2019-04-01:11:44:28	e34e287af56e16f20b8787dcd36cb797fce9fa13b884d4a1065b838b800a6504
+INFO:root:STATUS	01	bsmith	2019-04-01:11:44:35	9	heartbeat
+INFO:root:RECV: STATUS	01	bsmith	2019-04-01:11:44:35	9	heartbeat
+INFO:root:SEND: ACK	40	bsmith	2019-04-01:11:44:35	f533a970817907b8680925f12b5d5b1b0e0be795e9521af9df3048748884c660
+INFO:root:STATUS	01	asmith	2019-04-01:11:47:28	9	heartbeat
+INFO:root:RECV: STATUS	01	asmith	2019-04-01:11:47:28	9	heartbeat
+INFO:root:SEND: ACK	40	asmith	2019-04-01:11:47:28	8d1b265dfdcb617a357c97cbea71ad5e96d29759743217d72dda5b6e28b8f2d0
+INFO:root:STATUS	01	bsmith	2019-04-01:11:47:35	9	heartbeat
+INFO:root:RECV: STATUS	01	bsmith	2019-04-01:11:47:35	9	heartbeat
+INFO:root:SEND: ACK	40	bsmith	2019-04-01:11:47:35	d57510e58563305755896b5c82a1c4b67e1fda192947cca300a65165569169d1
+INFO:root:STATUS	01	asmith	2019-04-01:11:50:28	9	heartbeat
+INFO:root:RECV: STATUS	01	asmith	2019-04-01:11:50:28	9	heartbeat
+INFO:root:SEND: ACK	40	asmith	2019-04-01:11:50:28	8f6555a97710a209d462e8f717683fb4f8abe2223d1179d9f89ea59e629233a6
+INFO:root:STATUS	01	bsmith	2019-04-01:11:50:35	9	heartbeat
+INFO:root:RECV: STATUS	01	bsmith	2019-04-01:11:50:35	9	heartbeat
+INFO:root:SEND: ACK	40	bsmith	2019-04-01:11:50:35	8b736d1877420c846099cc91fb92491ac3deef224ee5c675d0450ed1c16c912f
+INFO:root:STATUS	01	asmith	2019-04-01:11:53:28	9	heartbeat
+INFO:root:RECV: STATUS	01	asmith	2019-04-01:11:53:28	9	heartbeat
+INFO:root:SEND: ACK	40	asmith	2019-04-01:11:53:28	fe8ae5983a4297175be6ee64e62f93af8941e48bf5e09d41ad256160b7395000
+INFO:root:STATUS	01	bsmith	2019-04-01:11:53:35	9	heartbeat
+INFO:root:RECV: STATUS	01	bsmith	2019-04-01:11:53:35	9	heartbeat
+INFO:root:SEND: ACK	40	bsmith	2019-04-01:11:53:35	fe0904bd7e9c5eeed645c92f2c1d730017cf6ca7d10d34c8a033d9d2a4236a6c

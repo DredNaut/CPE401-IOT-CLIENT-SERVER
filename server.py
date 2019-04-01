@@ -4,7 +4,7 @@
 # DESCRIPTION:      Connection Oriented Server
 
 
-from socket import socket, AF_INET, SOCK_STREAM
+from socket import socket, AF_INET, SOCK_STREAM, SOCK_DGRAM
 import datetime
 import sqlite3
 import hashlib
@@ -12,11 +12,6 @@ import logging
 from threading import Thread
 import sys
 
-# Logging settings
-server_port = int(sys.argv[1])
-d = '\t'
-logging.basicConfig(filename='./log/Activity.log',level=logging.DEBUG)
-open("./log/Activity.log","w+").close()
 
 
 # CLASS:        AckPacket
@@ -81,6 +76,7 @@ class AckPacket:
 
         self.setTime()
         self.setHash()
+        print (self.data)
 
         if self.p_type == "REGISTER":
             response = self.parseRegistration()
@@ -171,6 +167,8 @@ class AckPacket:
 # DESCRIPTION:  Check if the device is already in the registrar file
     def parseData(self):
         logging.info("Data Packet Received")
+        response = "ACK\t50\tserver\t"+self.time+d+self.hash
+        return response
 
     def parseQuery(self):
         logging.info("Query Packet Received")
@@ -330,24 +328,17 @@ class AckPacket:
                 connection.close()
                 return True
             else:
-                cursor.execute(format_str2)
+                cursor.execute(format_str3)
                 if cursor.fetchone():
-                    logging.info("IP reused")
-                    self.code = "12"
+                    logging.info("MAC reused")
+                    self.code = "13"
                     connection.close()
                     return True
                 else:
-                    cursor.execute(format_str3)
-                    if cursor.fetchone():
-                        logging.info("MAC reused")
-                        self.code = "13"
-                        connection.close()
-                        return True
-                    else:
-                        logging.info("No match, user not registered")
-                        self.code = "00"
-                        connection.close()
-                        return False
+                    logging.info("No match, user not registered")
+                    self.code = "00"
+                    connection.close()
+                    return False
             
 
 # FUNCTION:     auditDeregistration
@@ -377,6 +368,16 @@ class AckPacket:
                 self.code = "21"
                 connection.close()
                 return False
+
+def printDatabase():
+    connection = sqlite3.connect("./iot_server.db")
+    cursor = connection.cursor()
+
+    format_str0 = """SELECT * FROM registrar WHERE 1=1"""
+
+    cursor.execute(format_str0)
+    print(cursor.fetchall())
+    connection.close()
 
 
 def auditQuery(user):
@@ -409,7 +410,7 @@ def userExists(user):
         connection.close()
         return False
 
-def Listen(sock):
+def listen_tcp(sock):
     while True:
         sock, addr = s.accept()
         #logging.info(("connection from %s" addr))
@@ -417,43 +418,78 @@ def Listen(sock):
         logging.info(data)
         new_ack = AckPacket(data)
         response = new_ack.generateAck()
-
-
-
         logging.info("RECV: "+data)
+        print("\nReceived TCP packet check Activity.log for details")
         logging.info("SEND: "+response)
         sock.send(response) # echo
         sock.close()
 
+def listen_udp(sock):
+    sock.bind(("127.0.0.1", server_port))
+    while True:
+        data = sock.recv(1024)
+        fields = data.split('\t')
+        logging.info(data)
+        new_ack = AckPacket(data)
+        response = new_ack.generateAck()
+        logging.info("RECV: "+data)
+        print("\nReceived UDP packet check Activity.log for details")
+        logging.info("SEND: "+response)
+        if fields[0] == "ACK":
+            sock.send(response) # echo
+            sock.close()
+
 
 def sendQuery(user):
+    connection = sqlite3.connect("./iot_server.db")
     current = datetime.datetime.now()
-    currentDT = currentDT.strftime("%Y-%m-%d:%H:%M:%S")
-    query = "QUERY "+currentDT
+    currentDT = current.strftime("%Y-%m-%d:%H:%M:%S")
+    query = "QUERY\t01\tserver\t127.0.0.1\t1994\t"+currentDT+d+user
 
-    (SERVER, PORT) = ('127.0.0.1', 1994)
-    s = socket(AF_INET, SOCK_STREAM)
-    s.connect((SERVER,PORT))
-    s.send(query)
-    data = s.recv(1024)
-    logging.info(data)
+    cursor = connection.cursor()
+    format_str0 = """SELECT port FROM registrar WHERE username LIKE '{username}'""".format(username=user)
+
+    cursor.execute(format_str0)
+    dst_port = cursor.fetchall()[0][0]
+    print(dst_port)
+
+    (SERVER, PORT) = ('127.0.0.1', int(dst_port))
+    s = socket(AF_INET, SOCK_DGRAM)
+    s.sendto(query, (SERVER, PORT))
     s.close()
 
+if len(sys.argv) == 2:
+# Logging settings
+    server_port = int(sys.argv[1])
+    d = '\t'
+    logging.basicConfig(filename='./log/Activity.log',level=logging.DEBUG)
+    open("./log/Activity.log","w+").close()
 
 # FUNCTION:     Main
-s = socket(AF_INET, SOCK_STREAM)
-s.bind(('127.0.0.1', server_port))
-s.listen(5) # max queued connections
-t = Thread(target=Listen, args=(s,))
-t.daemon=True
-t.start()
-while True:
-    choice = raw_input("(1)\tSend Query\n(2)\tExit\nPlease Make a Selection: ")
-    if choice == "1":
-        user = raw_input("Enter the user you would like to query: ")
-        if auditQuery(user) == True:
-            logging.info("Sending Query")
+    s = socket(AF_INET, SOCK_STREAM)
+    o = socket(AF_INET, SOCK_DGRAM)
+    s.bind(('127.0.0.1', server_port))
+    s.listen(5) # max queued connections
+    t = Thread(target=listen_tcp, args=(s,))
+    t.daemon=True
+    t.start()
+    r = Thread(target=listen_udp, args=(o,))
+    r.daemon=True
+    r.start()
+    while True:
+        choice = raw_input("(1)\tSend Query\n(2)\tPrint Database\n(3)\tExit\nPlease Make a Selection: ")
+        if choice == "1":
+            user = raw_input("Enter the user you would like to query: ")
+            if auditQuery(user) == True:
+                logging.info("Sending Query")
+                sendQuery(user)
+            else:
+                logging.info("User is not logged in or no user exists")
+        elif choice == "2":
+            printDatabase()
         else:
-            logging.info("User is not logged in or no user exists")
-    else:
-        sys.exit(0)
+            s.close()
+            sys.exit(0)
+
+else:
+    print("USAGE:\npython server.py <server port>")

@@ -9,18 +9,6 @@ import hashlib
 import logging
 from threading import Thread
 
-d = "\t"
-Scode = "01"
-user = sys.argv[1]
-server_ip = sys.argv[2]
-server_port = sys.argv[3]
-udp_ip = "127.0.0.1"
-udp_port = ""
-listening_port = int(sys.argv[4])
-message = "heartbeat"
-length = len(message)
-message_size = str(length)
-logging.basicConfig(filename='./log/Activity.log',level=logging.DEBUG)
 
 def register():
     print("REGISTER PACKET:")
@@ -93,20 +81,14 @@ def query_client():
 def status():
     UDP_IP = "127.0.0.1"
     UDP_PORT = 1994
-    tcp_s = socket(AF_INET, SOCK_STREAM)
+    tcp_s = socket(AF_INET, SOCK_DGRAM)
+    tcp_s.connect((server_ip,int(server_port)))
     while True:
         time.sleep(180)        
         print("Status: Packet Sent")
 
         packet = "STATUS"+d+Scode+d+user+d+str(getTime())+d+message_size.encode('utf-8')+d+message
-        try:
-            tcp_s.connect((server_ip,int(server_port)))
-        except:
-            sleep(1)
-        try:
-            tcp_s.send(packet)
-        except:
-            sleep(1)
+        tcp_s.send(packet)
 
 # Listen for messages
 def listen():
@@ -126,68 +108,86 @@ def listen():
             response = "ACK"+d+"40"+d+user+d+str(getTime())+d+getHash(data)
             sock.sendto(response, (UDP_IP, UDP_PORT))
         elif fields[0] == "QUERY":
-            print("QUERY packet received")
+            print("\nQUERY packet received check Activity.log for details")
             response = "DATA"+d+"01"+d+user+d+udp_ip+d+str(listening_port)+d+getTime()+d+str(len(user))+d+user
             sock.sendto(response, (fields[3], int(fields[4])))
         elif fields[0] == "DATA":
-            print("DATA packet received")
+            print("\nDATA packet received check Activity.log for details")
             response = "ACK"+d+"50"+d+user+d+str(getTime())+d+getHash(data)
             sock.sendto(response, (fields[3], int(fields[4])))
 
+if len(sys.argv) == 5:
+
+    d = "\t"
+    Scode = "01"
+    user = sys.argv[1]
+    server_ip = sys.argv[2]
+    server_port = sys.argv[3]
+    udp_ip = "127.0.0.1"
+    udp_port = ""
+    listening_port = int(sys.argv[4])
+    message = "heartbeat"
+    length = len(message)
+    message_size = str(length)
+    logging.basicConfig(filename='./log/Activity.log',level=logging.DEBUG)
 
 # Start the listening and status threads
-l_t = Thread(target=listen, args=())
-l_t.daemon=True
-l_t.start()
-s_t = Thread(target=status, args=())
-s_t.daemon=True
-s_t.start()
-while True:
+    # Listening Thread
+    l_t = Thread(target=listen, args=())
+    l_t.daemon=True
+    l_t.start()
+    # Status Thread
+    s_t = Thread(target=status, args=())
+    s_t.daemon=True
+    s_t.start()
+    while True:
 
-    choice = int(raw_input("(1)\tRegister\n(2)\tDe-Register\n(3)\tLogin\n(4)\tLogoff\n(5)\tQuery Server\n(6)\tQuery Client\n(7)\tExit\nPlease Make a Selection: "))
-    tcp_flag = True
+        choice = int(raw_input("(1)\tRegister\n(2)\tDe-Register\n(3)\tLogin\n(4)\tLogoff\n(5)\tQuery Server\n(6)\tQuery Client\n(7)\tExit\nPlease Make a Selection: "))
+        tcp_flag = True
 
-    if choice == 1:
-        raw_packet = register()
-    elif choice == 2:
-        raw_packet = deregister()
-    elif choice == 3:
-        raw_packet = login()
-    elif choice == 4:
-        raw_packet = logoff()
-    elif choice == 5:
-        raw_packet = query_server()
-    elif choice == 6:
-        raw_packet = query_client()
-        tcp_flag = False
-    elif choice == 7:
-        sys.exit(0) 
-    else:
-        print("Incorrect input received.. Exiting")
-        tcp_s.close()
-        sys.exit(1)
+        if choice == 1:
+            raw_packet = register()
+        elif choice == 2:
+            raw_packet = deregister()
+        elif choice == 3:
+            raw_packet = login()
+        elif choice == 4:
+            raw_packet = logoff()
+        elif choice == 5:
+            raw_packet = query_server()
+        elif choice == 6:
+            raw_packet = query_client()
+            tcp_flag = False
+        elif choice == 7:
+            sys.exit(0) 
+        else:
+            print("Incorrect input received.. Exiting")
+            tcp_s.close()
+            sys.exit(1)
 
-    # Need each client to have a unique port number if using localhost
-    (SERVER, PORT) = (server_ip, int(server_port))
-    # Create the socket objects for tcp and udp sockets
-    tcp_s = socket(AF_INET, SOCK_STREAM)
-    udp_s = socket(AF_INET, SOCK_DGRAM)
+        # Need each client to have a unique port number if using localhost
+        (SERVER, PORT) = (server_ip, int(server_port))
+        # Create the socket objects for tcp and udp sockets
+        tcp_s = socket(AF_INET, SOCK_STREAM)
+        udp_s = socket(AF_INET, SOCK_DGRAM)
 
-    if tcp_flag:
-        # Attempt to connect to the server
-        try:
-            tcp_s.connect((SERVER,PORT))
+        if tcp_flag:
+            # Attempt to connect to the server
+            try:
+                tcp_s.connect((SERVER,PORT))
 
-            tcp_s.send(raw_packet)
-            data = tcp_s.recv(1024)
-            logging.info(data)
+                tcp_s.send(raw_packet)
+                data = tcp_s.recv(1024)
+                logging.info(data)
 
-        # Catch if connection refused
-        except error as e:
-            if e.errno == errno.ECONNREFUSED:
-                print ("Error connecting to the server.")
+            # Catch if connection refused
+            except error as e:
+                if e.errno == errno.ECONNREFUSED:
+                    print ("Error connecting to the server.")
 
-    # Sending UDP query
-    else:
-        udp_s.sendto(raw_packet, (udp_ip, int(udp_port)))
+        # Sending UDP query
+        else:
+            udp_s.sendto(raw_packet, (udp_ip, int(udp_port)))
 
+else:
+    print("USAGE:\npython client.py <device-id> <server-ip> <server-port> <listening port>")

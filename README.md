@@ -4,6 +4,13 @@
 Github: https://github.com/DredNaut/CPE401-IOT-CLIENT-SERVER
 My implementation of a client server protocol for interfacing generic IOT devices. Written in Python.
 
+### Check log/Activity.log for updates on the packets sent and received
+I recommend using the command:
+
+```bash
+tail -F log/Activity.log
+```
+
 ### Dependancies
 - a folder named "log" in your working directory, this will be where server logs are
 directed to.
@@ -68,13 +75,6 @@ Run the following command and then follow the prompt to create the desired packe
 (7) Exit
 Please Make a Selection: 1
 ```
-
-After this you will be asked for the following information:
-- MAC
-- IP
-- PORT
-- USER/DeviceID
-- Password
 
 The client will then send the packet off to the server which should be listening,
  if the server is configured correctly the client should receive a ACK packet.
