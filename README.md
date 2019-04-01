@@ -1,5 +1,5 @@
 # CPE401-IOT-CLIENT-SERVER
-## Current Assignment: Lab 2
+## Current Assignment: Lab 3
 ##### Jared Knutson
 Github: https://github.com/DredNaut/CPE401-IOT-CLIENT-SERVER
 My implementation of a client server protocol for interfacing generic IOT devices. Written in Python.
